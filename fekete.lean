@@ -287,30 +287,17 @@ end
 lemma seq_quot_conv_inf (X : ℕ → ℝ) (Hsa : subadditive X):
   ∀ (x : ℝ),  converges_to_seq (seq_quot X) x → is_inf ((seq_quot X) '[univ]) x :=
   begin
-    intros [x,Hx],
-    have lb (X '[univ]) x, from
+    intro,
+    intro HX,
+    let converges_seq_X := exists.intro x HX,
+    exact exists.elim (@ex_inf_of_seq_from_limit (seq_quot X) converges_seq_X)
     begin
-      unfold [lb,univ,image,mem,set_of],
       intros [y,Hy],
-      exact exists.elim Hy 
-      begin
-        intro [n,Hn],
-        rewrite -(and.right Hn),
-        exact or.elim(em (x ≤ X n)) (assume H: _, H)
-        begin
-          intro He,
-          let ε := (x - X n) * of_rat (0.5),
-          have 0 < ε, from mul_pos (sub_pos_of_lt (lt_of_not_ge He)) (of_rat_lt_of_rat_of_lt dec_trivial),
-          unfold converges_to_seq at Hx,
-          exact exists.elim (Hx this)
-          begin
-            intro [N,HN],
-            apply sorry
-          end
-        end
-      end
-    end,
-    apply sorry
+      have converges_to_seq (seq_quot X) y, from seq_quot_inf_conv X Hsa y Hy,
+      have x=y, from converges_to_seq_unique HX this,
+      rewrite this,
+      assumption
+    end
   end
 
 

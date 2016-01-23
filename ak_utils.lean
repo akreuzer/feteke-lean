@@ -1,6 +1,9 @@
 /- Copyright (c) Alexander Kreuzer 2016
 
 Lean Utilities Proofs for a proof of Feteke's lemma
+
+All theorems are contained in the namespace ak.
+Since these theorem come from different fields they are separated by sections.
 -/
 
 import theories.analysis.real_limit
@@ -12,11 +15,93 @@ set_option pp.coercions true
 
 namespace ak
 
+section
+
+open nat
+
+variable {A : Type}
+variable [s : decidable_linear_order A]
+include s
+ 
+definition seq_max_to  (X : ℕ → A): ℕ → A
+  | seq_max_to 0 := X 0
+  | seq_max_to (n+1) := max (seq_max_to n)  (X (n+1))
+
+proposition seq_max_to_le (X : ℕ → A) : 
+  ∀ {n : ℕ}, ∀ { k : ℕ }, k ≤ n → X k ≤ seq_max_to X n :=
+  begin
+    intro n,
+    induction n with n IH,
+    intro k,
+    intro this,
+    have k < 0 ∨ k = 0, from lt_or_eq_of_le this,
+    have k = 0, by simp,
+    rewrite [this,↑seq_max_to],
+    apply le_of_lt_or_eq,
+    right,
+    trivial,
+
+    intro k,
+    intro this,
+    have k < succ n ∨ k = succ n, from lt_or_eq_of_le this,
+    cases this,
+    have k ≤ n, from le_of_lt_succ a,
+    have H1: X k ≤ seq_max_to X n, from IH this, 
+    have seq_max_to X n ≤ seq_max_to X (n+1), from 
+      show seq_max_to X n ≤ max (seq_max_to X n)  (X (n+1)), from le_max_left _ _,
+    apply le.trans H1 this,
+
+    rewrite [a,↑seq_max_to],
+    apply le_max_right
+  end
+
+-- We need the same with min instead of max
+-- For now this is just a copy with max replace by min
+-- Is there any better way by just taking the "reverse order"?
+definition seq_min_to  (X : ℕ → A): ℕ → A
+  | seq_min_to 0 := X 0
+  | seq_min_to (n+1) := min (seq_min_to n)  (X (n+1))
+
+proposition seq_min_to_ge (X : ℕ → A) : 
+  ∀ {n : ℕ}, ∀ { k : ℕ }, k ≤ n → X k ≥ seq_min_to X n :=
+  begin
+    intro n,
+    induction n with n IH,
+    intro k,
+    intro this,
+    have k < 0 ∨ k = 0, from lt_or_eq_of_le this,
+    have k = 0, by simp,
+    rewrite [this,↑seq_min_to],
+    apply le_of_lt_or_eq,
+    right,
+    trivial,
+
+    intro k,
+    intro this,
+    have k < succ n ∨ k = succ n, from lt_or_eq_of_le this,
+    cases this,
+    have k ≤ n, from le_of_lt_succ a,
+    have H1: X k ≥ seq_min_to X n, from IH this, 
+    have seq_min_to X n ≥ seq_min_to X (n+1), from 
+      show seq_min_to X n ≥ min (seq_min_to X n)  (X (n+1)), from min_le_left _ _,
+    apply le.trans  this H1,
+
+    rewrite [a,↑seq_min_to],
+    apply min_le_right
+  end
+
+end
+
 section 
 
 open classical
 open real
 
+/-
+ If x is the infimum of a set X 
+ then for every epsilon > 0 
+ there exists a point y epsilon close to x
+-/
 theorem inf_exists_point (X: set ℝ) (x: ℝ) (Hx: is_inf X x) (epsilon: ℝ) (Hepsilon: epsilon > 0) :
   ∃ (y : ℝ), (X y) ∧ (y-x < epsilon) :=
   by_contradiction 
@@ -50,6 +135,13 @@ theorem inf_exists_point (X: set ℝ) (x: ℝ) (Hx: is_inf X x) (epsilon: ℝ) (
 
 open set rat nat
 
+/-
+ If a sequence X converges to x
+ and y is the infimum of X'[univ]
+ then x must be greater or equal to y
+
+ This theorem is actually not used in feteke.lean
+-/
 theorem inf_le_limit (X : ℕ → ℝ) (x : ℝ) (Hx : converges_to_seq X x):
   ∀ (y: ℝ), is_inf (X '[univ]) y → x ≥ y := 
   begin
@@ -87,12 +179,63 @@ theorem inf_le_limit (X : ℕ → ℝ) (x : ℝ) (Hx : converges_to_seq X x):
       end
   end
 
+/-
+ If a sequence X has a limit then the infinimum of the X '[univ] exists
+-/
+theorem ex_inf_of_seq_from_limit (X: ℕ → ℝ) [H : converges_seq X]:
+  ∃ (y:ℝ), is_inf (X '[univ]) y := 
+  begin
+    have ∃ (N:ℕ), ∀ (n:ℕ), n ≥ N → abs (X n - limit_seq X) < 1, from converges_to_limit_seq X zero_lt_one,
+    exact exists.elim this 
+    begin
+      intros [N,Hn],
+      let lb1 := seq_min_to X N,
+      let lb2 := limit_seq X - 1,
+      let lbt := min lb1 lb2,
+
+      apply exists_is_inf_of_inh_of_bdd,
+      show (X '[univ]) (X 0), from 
+      begin
+        unfold [univ,image,mem,set_of],
+        existsi 0,
+        split,
+        trivial,
+        exact rfl
+      end,
+
+      unfold [lb,univ,image,mem,set_of],
+      intros,
+      exact exists.elim a
+      begin
+        intros [m,Hm],
+        cases Hm with [Hm',Hm''],
+        rewrite -Hm'',
+        
+        exact or.elim(decidable.em (m≥ N))
+        begin
+          intro HmN,
+          have lb2 < X m, from sub_lt_of_abs_sub_lt_left (Hn m HmN),
+          exact le.trans (min_le_right lb1 _) (le_of_lt this) 
+        end
+        begin
+          intro HmN,
+          have m ≤ N, from le_of_lt (lt_of_not_ge HmN),
+          have lb1 ≤ X m, from seq_min_to_ge X this,
+          exact le.trans !min_le_left this 
+        end
+      end
+    end
+  end
 end
 
 
 section 
 open nat real
 
+/-
+ This theorem shows that
+ "Integer division of x with y" - "Rational division of x with y" is in [0;1[
+-/
 theorem nat_div_estimate (x : ℕ) (y : ℕ) (Hy : y > (0:ℕ)):
   (of_nat x) / (of_nat y) - (of_nat (div x y)) < 1 ∧ (of_nat x) / (of_nat y) - of_nat (div x y) ≥ 0   :=
   begin
@@ -125,7 +268,9 @@ theorem nat_div_estimate (x : ℕ) (y : ℕ) (Hy : y > (0:ℕ)):
 end
 
 
--- Section on real/ordered_field inequalities
+/-
+ Section on real/ordered_field inequalities
+-/
 section
 
 theorem div_lt_of_lt_mul_pos {A: Type} [s : linear_ordered_field A] {a b c: A} (Hc: 0<c):

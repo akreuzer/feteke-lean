@@ -7,7 +7,7 @@ Feteke's lemma is the statement that for a subadditive sequence X(n),
 the infimum and the limit of the the sequence X(n)/n are equal.
 This should be understood in the way, that if one of them exists the other exists, too.
 
-For more details see [Wikipedia|Subadditivity](https://en.wikipedia.org/wiki/Subadditivity)
+For more details see [Wikipedia|Subadditivity](https://en.wikipedia.org/wiki/Subadditivity).
 Feteke's lemma is the main ingredient for *Kingman's Subadditive Ergodic Theorem*.
 
 # Formal proof

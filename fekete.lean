@@ -78,38 +78,6 @@ corollary t1b (X : ℕ → ℝ) (Hsa : subadditive X) (c: ℕ) (n: ℕ):
     have H'': Y 1 = X(c), from eq.subst (mul_one c) rfl,
     show  X(c * (n + 1)) ≤ of_nat (n+1) * X c , from eq.subst H'' (eq.subst H'  H)
 
-noncomputable definition seq_max_to (X : ℕ → ℝ): ℕ → ℝ 
-  | seq_max_to 0 := X 0
-  | seq_max_to (n+1) := max (seq_max_to n)  (X (n+1))
-
-proposition seq_max_to_le (X : ℕ → ℝ) : 
-  ∀ {n : ℕ}, ∀ { k : ℕ }, k ≤ n → X k ≤ seq_max_to X n :=
-  begin
-    intro n,
-    induction n with n IH,
-    intro k,
-    intro this,
-    have k < 0 ∨ k = 0, from lt_or_eq_of_le this,
-    have k = 0, by simp,
-    rewrite [this,↑seq_max_to],
-    apply le_of_lt_or_eq,
-    right,
-    trivial,
-
-    intro k,
-    intro this,
-    have k < succ n ∨ k = succ n, from lt_or_eq_of_le this,
-    cases this,
-    have k ≤ n, from le_of_lt_succ a,
-    have H1: X k ≤ seq_max_to X n, from IH this, 
-    have seq_max_to X n ≤ seq_max_to X (n+1), from 
-      show seq_max_to X n ≤ max (seq_max_to X n)  (X (n+1)), from le_max_left _ _,
-    apply real.le_trans H1 this,
-
-    rewrite [a,↑seq_max_to],
-    apply le_max_right
-  end
-
 proposition t2 (X : ℕ → ℝ) (Hsa : subadditive X) (c : ℕ) (n : ℕ) :
   X n ≤ of_nat (div n c) * X c + X (n % c) :=
   assert H1: X n ≤ X (n / c * c) + X (n % c), from
@@ -316,7 +284,7 @@ begin
   end,
 end
 
-theorem seq_quot_conv_inf (X : ℕ → ℝ) (Hsa : subadditive X):
+lemma seq_quot_conv_inf (X : ℕ → ℝ) (Hsa : subadditive X):
   ∀ (x : ℝ),  converges_to_seq (seq_quot X) x → is_inf ((seq_quot X) '[univ]) x :=
   begin
     intros [x,Hx],

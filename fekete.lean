@@ -6,7 +6,7 @@ LEAN Proof of Feteke's lemma
 import theories.analysis.real_limit
 import standard
 import ak_utils
-open real nat set rat pnat num classical int
+open real nat set rat pnat num classical int analysis
 open eq.ops
 
 open ak
@@ -117,7 +117,7 @@ corollary t2c (X : ℕ → ℝ) (Hsa : subadditive X) (c : ℕ) (n : ℕ) (Hc: c
 
 
 lemma seq_quot_inf_conv ( X : ℕ → ℝ) (Hsa : subadditive X):
-  ∀ (x : ℝ), is_inf ((seq_quot X) '[univ]) x → converges_to_seq (seq_quot X) x :=
+  ∀ (x : ℝ), is_inf ((seq_quot X) ' univ) x → converges_to_seq (seq_quot X) x :=
   let Xq := seq_quot X in
 begin
   intros [x, Hinfx],
@@ -137,7 +137,7 @@ begin
   unfold converges_to_seq,
   intro [ε, epspos],
   have ε * of_rat 0.3 > 0, from mul_pos epspos (of_rat_lt_of_rat_of_lt dec_trivial),
-  have ∃ (y : ℝ), (y∈ Xq '[univ]) ∧ (y - x < ε * of_rat 0.3), from inf_exists_point _ x Hinfx (ε * of_rat 0.3) this,
+  have ∃ (y : ℝ), (y∈ Xq ' univ) ∧ (y - x < ε * of_rat 0.3), from inf_exists_point _ x Hinfx (ε * of_rat 0.3) this,
   have ∃ (n : ℕ), (Xq n - x < ε * of_rat 0.3) ∧ n > 0, from exists.elim this 
   begin
     intros [a, Ha],
@@ -274,8 +274,8 @@ begin
     apply add_le_add_left,
     rewrite [-left_distrib,-(mul_one ε),mul.assoc],
     apply mul_le_mul_of_nonneg_left,
-    rewrite [one_mul,-of_rat_one],
-    xrewrite -of_rat_add,
+    xrewrite one_mul,
+    xrewrite [-of_rat_one,-of_rat_add],
     apply of_rat_le_of_rat_of_le,
     apply dec_trivial,
 
@@ -285,7 +285,7 @@ begin
 end
 
 lemma seq_quot_conv_inf (X : ℕ → ℝ) (Hsa : subadditive X):
-  ∀ (x : ℝ),  converges_to_seq (seq_quot X) x → is_inf ((seq_quot X) '[univ]) x :=
+  ∀ (x : ℝ),  converges_to_seq (seq_quot X) x → is_inf ((seq_quot X) ' univ) x :=
   begin
     intro,
     intro HX,
@@ -304,6 +304,6 @@ lemma seq_quot_conv_inf (X : ℕ → ℝ) (Hsa : subadditive X):
 -- Feteke's Lemma
 -- This will be just a combination of seq_quot_inf_conv and seq_quot_conv_inf
 theorem feteke (X : ℕ → ℝ) (Hsa: subadditive X):
-  ∀ (x: ℝ), converges_to_seq (seq_quot X) x ↔ is_inf ((seq_quot X) '[univ]) x
+  ∀ (x: ℝ), converges_to_seq (seq_quot X) x ↔ is_inf ((seq_quot X) ' univ) x
   := 
   take x, iff.intro (seq_quot_conv_inf X Hsa x) (seq_quot_inf_conv X Hsa x)

@@ -8,7 +8,7 @@ Since these theorem come from different fields they are separated by sections.
 
 import theories.analysis.real_limit
 import standard
-open eq.ops
+open eq.ops real analysis
 
 set_option pp.coercions true
 --set_option pp.implicit true
@@ -137,13 +137,13 @@ open set rat nat
 
 /-
  If a sequence X converges to x
- and y is the infimum of X'[univ]
+ and y is the infimum of X ' univ
  then x must be greater or equal to y
 
  This theorem is actually not used in feteke.lean
 -/
 theorem inf_le_limit (X : ℕ → ℝ) (x : ℝ) (Hx : converges_to_seq X x):
-  ∀ (y: ℝ), is_inf (X '[univ]) y → x ≥ y := 
+  ∀ (y: ℝ), is_inf (X ' univ) y → x ≥ y := 
   begin
     intro,
     intro Hy,
@@ -166,7 +166,7 @@ theorem inf_le_limit (X : ℕ → ℝ) (x : ℝ) (Hx : converges_to_seq X x):
             rewrite [-mul_one x,-mul_one y,+mul.assoc,one_mul,-+mul_sub_left_distrib],
             apply mul_lt_mul_of_pos_right,
             exact (lt_of_not_ge Hc),
-            rewrite [-of_rat_one],
+            xrewrite [-of_rat_one],
             xrewrite -of_rat_sub,
             apply of_rat_lt_of_rat_of_lt,
             exact dec_trivial,
@@ -180,10 +180,10 @@ theorem inf_le_limit (X : ℕ → ℝ) (x : ℝ) (Hx : converges_to_seq X x):
   end
 
 /-
- If a sequence X has a limit then the infinimum of the X '[univ] exists
+ If a sequence X has a limit then the infinimum of the X ' univ exists
 -/
 theorem ex_inf_of_seq_from_limit (X: ℕ → ℝ) [H : converges_seq X]:
-  ∃ (y:ℝ), is_inf (X '[univ]) y := 
+  ∃ (y:ℝ), is_inf (X ' univ) y := 
   begin
     have ∃ (N:ℕ), ∀ (n:ℕ), n ≥ N → abs (X n - limit_seq X) < 1, from converges_to_limit_seq X zero_lt_one,
     exact exists.elim this 
@@ -194,7 +194,7 @@ theorem ex_inf_of_seq_from_limit (X: ℕ → ℝ) [H : converges_seq X]:
       let lbt := min lb1 lb2,
 
       apply exists_is_inf_of_inh_of_bdd,
-      show (X '[univ]) (X 0), from 
+      show (X ' univ ) (X 0), from 
       begin
         unfold [univ,image,mem,set_of],
         existsi 0,

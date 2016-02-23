@@ -112,7 +112,7 @@ theorem inf_exists_point (X: set ℝ) (x: ℝ) (Hx: is_inf X x) (epsilon: ℝ) (
     begin
       intro y,
       intro HXy,
-      have ¬ (X y) ∨ ¬ y-x < epsilon, from iff.mp not_and_iff_not_or_not (this y),
+      have ¬ (X y) ∨ ¬ y-x < epsilon, from iff.mp !not_and_iff_not_or_not (this y),
       have ¬ y-x < epsilon, from or.elim this (assume Hp: ¬ (X y), absurd HXy Hp) (assume Hp: ¬ y-x < epsilon, Hp),
       apply le_of_not_gt,
       rewrite [↑gt],

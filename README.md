@@ -12,8 +12,12 @@ Feteke's lemma is the main ingredient for *Kingman's Subadditive Ergodic Theorem
 
 # Formal proof
 
-The formal proof was developed in [LEAN](https://leanprover.github.io/).
+The formal proof was developed in [LEAN 0.2](https://leanprover.github.io/).
 
 ak_utils.lean contains proofs of some facts which might be useful in other proofs, too.
+ak_compat.lean contains some fact from an earlier version of lean on which this proof depends.
 
-&copy; [Alexander Kreuzer](http://aleph.one/matkaps) 2016
+&copy; [Alexander Kreuzer](http://aleph.one/matkaps) 2016, 2017
+
+Old address (https://akreuzer@gitlab.com/akreuzer/feteke-lean.git)
+

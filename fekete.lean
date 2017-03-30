@@ -1,4 +1,4 @@
-/- Copyright (c) Alexander Kreuzer 2016
+/- Copyright (c) Alexander Kreuzer 2016, 2017
 
 LEAN Proof of Feteke's lemma
 -/
@@ -6,6 +6,7 @@ LEAN Proof of Feteke's lemma
 import theories.analysis.real_limit
 import standard
 import ak_utils
+import ak_compat
 open real nat set rat pnat num classical int analysis
 open eq.ops
 
@@ -109,7 +110,7 @@ proposition t2 (X : ℕ → ℝ) (Hsa : subadditive X) (c : ℕ) (n : ℕ) :
   end
   
 corollary t2c (X : ℕ → ℝ) (Hsa : subadditive X) (c : ℕ) (n : ℕ) (Hc: c > (0 : ℕ)):
-  X n ≤ of_nat (div n c) * X c + (seq_max_to X c) :=
+  X n ≤ of_nat (div n c) * X c + (ak.seq_max_to X c) :=
   have n % c ≤ c, from le_of_lt (mod_lt _ Hc),
   have X(n % c) ≤ seq_max_to X c, from seq_max_to_le X this,
   have of_nat (div n c) * X c + X (n % c) ≤ of_nat (div n c) * X c + seq_max_to X c, from add_le_add_left this _,
@@ -117,7 +118,7 @@ corollary t2c (X : ℕ → ℝ) (Hsa : subadditive X) (c : ℕ) (n : ℕ) (Hc: c
 
 
 lemma seq_quot_inf_conv ( X : ℕ → ℝ) (Hsa : subadditive X):
-  ∀ (x : ℝ), is_inf ((seq_quot X) ' univ) x → converges_to_seq (seq_quot X) x :=
+  ∀ (x : ℝ), is_inf ((seq_quot X) ' univ) x → ak_compat.converges_to_seq (seq_quot X) x :=
   let Xq := seq_quot X in
 begin
   intros [x, Hinfx],
@@ -134,7 +135,7 @@ begin
     trivial,
     apply rfl
   end,
-  unfold converges_to_seq,
+  unfold ak_compat.converges_to_seq,
   intro [ε, epspos],
   have ε * of_rat 0.3 > 0, from mul_pos epspos (of_rat_lt_of_rat_of_lt dec_trivial),
   have ∃ (y : ℝ), (y∈ Xq ' univ) ∧ (y - x < ε * of_rat 0.3), from inf_exists_point _ x Hinfx (ε * of_rat 0.3) this,
@@ -285,7 +286,7 @@ begin
 end
 
 lemma seq_quot_conv_inf (X : ℕ → ℝ) (Hsa : subadditive X):
-  ∀ (x : ℝ),  converges_to_seq (seq_quot X) x → is_inf ((seq_quot X) ' univ) x :=
+  ∀ (x : ℝ), ak_compat.converges_to_seq (seq_quot X) x → is_inf ((seq_quot X) ' univ) x :=
   begin
     intro,
     intro HX,
@@ -293,8 +294,8 @@ lemma seq_quot_conv_inf (X : ℕ → ℝ) (Hsa : subadditive X):
     exact exists.elim (@ex_inf_of_seq_from_limit (seq_quot X) converges_seq_X)
     begin
       intros [y,Hy],
-      have converges_to_seq (seq_quot X) y, from seq_quot_inf_conv X Hsa y Hy,
-      have x=y, from converges_to_seq_unique HX this,
+      have ak_compat.converges_to_seq (seq_quot X) y, from seq_quot_inf_conv X Hsa y Hy,
+      have x=y, from ak_compat.converges_to_seq_unique HX this,
       rewrite this,
       assumption
     end
@@ -304,6 +305,6 @@ lemma seq_quot_conv_inf (X : ℕ → ℝ) (Hsa : subadditive X):
 -- Feteke's Lemma
 -- This will be just a combination of seq_quot_inf_conv and seq_quot_conv_inf
 theorem feteke (X : ℕ → ℝ) (Hsa: subadditive X):
-  ∀ (x: ℝ), converges_to_seq (seq_quot X) x ↔ is_inf ((seq_quot X) ' univ) x
+  ∀ (x: ℝ), ak_compat.converges_to_seq (seq_quot X) x ↔ is_inf ((seq_quot X) ' univ) x
   := 
   take x, iff.intro (seq_quot_conv_inf X Hsa x) (seq_quot_inf_conv X Hsa x)
